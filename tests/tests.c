@@ -80,7 +80,7 @@ static void test_suite_expected() {
     kgflags_string("string", "lorem", "String flag.", true, &stringval);
 
     bool boolval = false;
-    kgflags_bool("bool", false, "Boolean flag.", true, &boolval);
+    kgflags_bool("bool", "Boolean flag.", &boolval);
 
     int intval = 0;
     kgflags_int("int", 0, "Integer flag.", true, &intval);

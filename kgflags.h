@@ -1,5 +1,5 @@
 /*
- kgflags v0.2.0
+ kgflags v0.3.0
  http://github.com/kgabis/kgflags/
  Copyright (c) 2019 Krzysztof Gabis
  Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -80,7 +80,7 @@ typedef struct kgflags_double_array {
 
 // Functions used to declare flags. If kgflags_parse succeeds values are assigned to out_res/out_arr. Description is optional.
 void kgflags_string(const char *name, const char *default_value, const char *description, bool required, const char** out_res);
-void kgflags_bool(const char *name, bool default_value, const char *description, bool required, bool *out_res);
+void kgflags_bool(const char *name, const char *description, bool *out_res);
 void kgflags_int(const char *name, int default_value, const char *description, bool required, int *out_res);
 void kgflags_double(const char *name, double default_value, const char *description, bool required, double *out_res);
 
@@ -243,15 +243,15 @@ void kgflags_string(const char *name, const char *default_value, const char *des
     _kgflags_add_flag(flag);
 }
 
-void kgflags_bool(const char *name, bool default_value, const char *description, bool required, bool *out_res) {
+void kgflags_bool(const char *name, const char *description, bool *out_res) {
     *out_res = false;
 
     _kgflags_flag_t flag;
     flag.kind = KGFLAGS_FLAG_KIND_BOOL;
     flag.name = name;
-    flag.default_value.bool_value = default_value;
+    flag.default_value.bool_value = false;
     flag.description = description;
-    flag.required = required;
+    flag.required = false;
     flag.result.bool_value = out_res;
     flag.assigned = false;
     _kgflags_add_flag(flag);
@@ -447,10 +447,7 @@ void kgflags_print_usage() {
                 }
                 break;
             case KGFLAGS_FLAG_KIND_BOOL: {
-                fprintf(stderr, "\t%s%s%s\n", _kgflags_g.flag_prefix, flag->name, flag->required ? "" : " (optional)");
-                if (!flag->required) {
-                    fprintf(stderr, "\t\tDefault: %s\n", flag->default_value.bool_value ? "True" : "False");
-                }
+                fprintf(stderr, "\t%s%s (boolean)\n", _kgflags_g.flag_prefix, flag->name);
                 break;
             }
             case KGFLAGS_FLAG_KIND_INT: {
