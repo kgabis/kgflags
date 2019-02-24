@@ -66,6 +66,7 @@ static void test_suite_expected() {
         "non-flag-argument-0",
         "--string", "lorem ipsum",
         "--bool",
+        "--no-bool-2",
         "--int", "123",
         "non-flag-argument-1",
         "--double", "123.3",
@@ -81,6 +82,9 @@ static void test_suite_expected() {
 
     bool boolval = false;
     kgflags_bool("bool", "Boolean flag.", &boolval);
+
+    bool bool2val = true;
+    kgflags_bool("bool-2", "Boolean flag.", &bool2val);
 
     int intval = 0;
     kgflags_int("int", 0, "Integer flag.", true, &intval);
@@ -114,6 +118,7 @@ static void test_suite_expected() {
     TEST("String argument", STREQ(stringval, "lorem ipsum"));
     TEST("Optional string argument", STREQ(optionalval, "lorem"));
     TEST("Bool argument", boolval == true);
+    TEST("Bool argument", bool2val == false);
     TEST("Int argument", intval == 123);
     TEST("Double argument", DBLEQ(doubleval, 123.3));
     TEST("Optional assigned", STREQ(optionalval_assigned, "lorem ipsum"));
@@ -165,7 +170,7 @@ static void test_suite_uncommon() {
 
     {
         test_kgflags_reset();
-        char *argv[] = { "", "--string", "--val"};
+        char *argv[] = { "", "--string", "--val" };
         const char *str = NULL;
         kgflags_string("string", NULL, NULL, true, &str);
         TEST("Value with prefix", kgflags_parse(ARRAY_SIZE(argv), argv));
@@ -174,7 +179,7 @@ static void test_suite_uncommon() {
 
     {
         test_kgflags_reset();
-        char *argv[] = { "", "--", "val"};
+        char *argv[] = { "", "--", "val" };
         const char *str = NULL;
         kgflags_string("", NULL, NULL, true, &str);
         TEST("Empty flag name", kgflags_parse(ARRAY_SIZE(argv), argv));
@@ -185,7 +190,7 @@ static void test_suite_uncommon() {
 static void test_suite_errors() {
     {
         test_kgflags_reset();
-        char *argv[] = { "", "--string"};
+        char *argv[] = { "", "--string" };
         const char *str = NULL;
         kgflags_string("string", NULL, NULL, true, &str);
         TEST("Missing value (string)", kgflags_parse(ARRAY_SIZE(argv), argv) == false);
@@ -195,7 +200,7 @@ static void test_suite_errors() {
 
     {
         test_kgflags_reset();
-        char *argv[] = { "", "--intval"};
+        char *argv[] = { "", "--intval" };
         int intval = 0;
         kgflags_int("intval", 0, NULL, true, &intval);
         TEST("Missing value (int)", kgflags_parse(ARRAY_SIZE(argv), argv) == false);
@@ -205,7 +210,7 @@ static void test_suite_errors() {
 
     {
         test_kgflags_reset();
-        char *argv[] = { "", "--double"};
+        char *argv[] = { "", "--double" };
         double dblval = 0.0;
         kgflags_double("double", 0.0, NULL, true, &dblval);
         TEST("Missing value (double)", kgflags_parse(ARRAY_SIZE(argv), argv) == false);
@@ -215,7 +220,7 @@ static void test_suite_errors() {
 
     {
         test_kgflags_reset();
-        char *argv[] = { "", "--unknown", "val"};
+        char *argv[] = { "", "--unknown", "val" };
         TEST("Unknown flag", kgflags_parse(ARRAY_SIZE(argv), argv) == false);
         TEST("Errors count == 1", _kgflags_g.errors_count == 1);
         TEST("KGFLAGS_ERROR_KIND_UNKNOWN_FLAG set", test_kgflags_contains_error(KGFLAGS_ERROR_KIND_UNKNOWN_FLAG));
@@ -300,7 +305,7 @@ static void test_suite_errors() {
     {
         test_kgflags_reset();
         const char *str = NULL;
-        char *argv[] = { "", "--string", "val1", "--string", "val2"};
+        char *argv[] = { "", "--string", "val1", "--string", "val2" };
         kgflags_string("string", NULL, NULL, true, &str);
         TEST("Multiple assignment", kgflags_parse(ARRAY_SIZE(argv), argv) == false);
         TEST("Errors count == 1", _kgflags_g.errors_count == 1);
@@ -309,7 +314,7 @@ static void test_suite_errors() {
 
     {
         test_kgflags_reset();
-        char *argv[] = { "",};
+        char *argv[] = { "", };
         const char *strval1 = NULL, *strval2 = NULL;
         kgflags_string("string", NULL, NULL, true, &strval1);
         kgflags_string("string", NULL, NULL, true, &strval2);
@@ -317,12 +322,33 @@ static void test_suite_errors() {
         TEST("Errors count == 1", _kgflags_g.errors_count == 1);
         TEST("KGFLAGS_ERROR_KIND_DUPLICATE_FLAG set", test_kgflags_contains_error(KGFLAGS_ERROR_KIND_DUPLICATE_FLAG));
     }
+
+    {
+        test_kgflags_reset();
+        char *argv[] = { "", };
+        bool boolval = false;
+        kgflags_bool("no-bool", NULL, &boolval);
+        TEST("Bool flag with no- prefix", kgflags_parse(ARRAY_SIZE(argv), argv) == false);
+        TEST("Errors count == 1", _kgflags_g.errors_count == 1);
+        TEST("KGFLAGS_ERROR_KIND_PREFIX_NO set", test_kgflags_contains_error(KGFLAGS_ERROR_KIND_PREFIX_NO));
+    }
+
+    {
+        test_kgflags_reset();
+        char *argv[] = { "", "--no-unknown", "val" };
+        const char *strval = NULL;
+        kgflags_string("unknown", NULL, NULL, true, &strval);
+        TEST("Unknown flag with no-prefix (non-boolean)", kgflags_parse(ARRAY_SIZE(argv), argv) == false);
+        TEST("Errors count == 1", _kgflags_g.errors_count == 2);
+        TEST("KGFLAGS_ERROR_KIND_UNKNOWN_FLAG set", test_kgflags_contains_error(KGFLAGS_ERROR_KIND_UNKNOWN_FLAG));
+        TEST("KGFLAGS_ERROR_KIND_UNASSIGNED_FLAG set", test_kgflags_contains_error(KGFLAGS_ERROR_KIND_UNASSIGNED_FLAG));
+    }
 }
 
 void test_suite_int() {
     {
         test_kgflags_reset();
-        char *argv[] = { "", "--intval", "-123"};
+        char *argv[] = { "", "--intval", "-123" };
         int intval = 0;
         kgflags_int("intval", 0, NULL, true, &intval);
         TEST("Negative value (int)", kgflags_parse(ARRAY_SIZE(argv), argv));
@@ -331,7 +357,7 @@ void test_suite_int() {
 
     {
         test_kgflags_reset();
-        char *argv[] = { "", "--intval", "+123"};
+        char *argv[] = { "", "--intval", "+123" };
         int intval = 0;
         kgflags_int("intval", 0, NULL, true, &intval);
         TEST("Positive value (int)", kgflags_parse(ARRAY_SIZE(argv), argv));
@@ -340,7 +366,7 @@ void test_suite_int() {
 
     {
         test_kgflags_reset();
-        char *argv[] = { "", "--intval", "123a"};
+        char *argv[] = { "", "--intval", "123a" };
         int intval = 0;
         kgflags_int("intval", 0, NULL, true, &intval);
         TEST("Invalid int value - extra character", kgflags_parse(ARRAY_SIZE(argv), argv) == false);
@@ -350,7 +376,7 @@ void test_suite_int() {
 
     {
         test_kgflags_reset();
-        char *argv[] = { "", "--intval", "abc"};
+        char *argv[] = { "", "--intval", "abc" };
         int intval = 0;
         kgflags_int("intval", 0, NULL, true, &intval);
         TEST("Invalid int value - string", kgflags_parse(ARRAY_SIZE(argv), argv) == false);
@@ -412,7 +438,7 @@ void test_suite_int() {
 static void test_suite_double() {
     {
         test_kgflags_reset();
-        char *argv[] = { "", "--dblval", "+123.4"};
+        char *argv[] = { "", "--dblval", "+123.4" };
         double dblval = 0.0;
         kgflags_double("dblval", 0.0, NULL, true, &dblval);
         TEST("Positive value (double)", kgflags_parse(ARRAY_SIZE(argv), argv));
@@ -421,7 +447,7 @@ static void test_suite_double() {
 
     {
         test_kgflags_reset();
-        char *argv[] = { "", "--dblval", "-123.4"};
+        char *argv[] = { "", "--dblval", "-123.4" };
         double dblval = 0.0;
         kgflags_double("dblval", 0.0, NULL, true, &dblval);
         TEST("Negative value (double)", kgflags_parse(ARRAY_SIZE(argv), argv));
@@ -430,7 +456,7 @@ static void test_suite_double() {
 
     {
         test_kgflags_reset();
-        char *argv[] = { "", "--dblval", "123"};
+        char *argv[] = { "", "--dblval", "123" };
         double dblval = 0.0;
         kgflags_double("dblval", 0.0, NULL, true, &dblval);
         TEST("Value without dot (double)", kgflags_parse(ARRAY_SIZE(argv), argv));
@@ -451,7 +477,7 @@ static void test_suite_double() {
 
     {
         test_kgflags_reset();
-        char *argv[] = { "", "--dblval", "NaN"};
+        char *argv[] = { "", "--dblval", "NaN" };
         double dblval = 0.0;
         kgflags_double("dblval", 0.0, NULL, true, &dblval);
         TEST("NaN", kgflags_parse(ARRAY_SIZE(argv), argv));
@@ -460,7 +486,7 @@ static void test_suite_double() {
 
     {
         test_kgflags_reset();
-        char *argv[] = { "", "--dblval", "Inf"};
+        char *argv[] = { "", "--dblval", "Inf" };
         double dblval = 0.0;
         kgflags_double("dblval", 0.0, NULL, true, &dblval);
         TEST("Inf", kgflags_parse(ARRAY_SIZE(argv), argv));
@@ -469,7 +495,7 @@ static void test_suite_double() {
 
     {
         test_kgflags_reset();
-        char *argv[] = { "", "--dblval", "-Inf"};
+        char *argv[] = { "", "--dblval", "-Inf" };
         double dblval = 0.0;
         kgflags_double("dblval", 0.0, NULL, true, &dblval);
         TEST("-Inf", kgflags_parse(ARRAY_SIZE(argv), argv));
@@ -480,7 +506,7 @@ static void test_suite_double() {
         test_kgflags_reset();
         char buf[256];
         sprintf(buf, "%f", NAN);
-        char *argv[] = { "", "--dblval", "123.4a"};
+        char *argv[] = { "", "--dblval", "123.4a" };
         double dblval = 0.0;
         kgflags_double("dblval", 0.0, NULL, true, &dblval);
         TEST("Invalid double", kgflags_parse(ARRAY_SIZE(argv), argv) == false);

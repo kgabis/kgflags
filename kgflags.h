@@ -1,5 +1,5 @@
 /*
- kgflags v0.4.0
+ kgflags v0.5.0
  http://github.com/kgabis/kgflags/
  Copyright (c) 2019 Krzysztof Gabis
  Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -188,6 +188,7 @@ typedef enum _kgflags_error_kind {
     KGFLAGS_ERROR_KIND_TOO_MANY_NON_FLAG_ARGS,
     KGFLAGS_ERROR_KIND_MULTIPLE_ASSIGNMENT,
     KGFLAGS_ERROR_KIND_DUPLICATE_FLAG,
+    KGFLAGS_ERROR_KIND_PREFIX_NO,
 } _kgflags_error_kind_t;
 
 typedef struct _kgflags_error {
@@ -199,16 +200,15 @@ typedef struct _kgflags_error {
 static bool _kgflags_is_flag(const char* arg);
 static const char* _kgflags_get_flag_name(const char* arg);
 static void _kgflags_add_flag(_kgflags_flag_t arg);
-static _kgflags_flag_t* _kgflags_get_flag(const char* name);
+static _kgflags_flag_t* _kgflags_get_flag(const char* name, bool *out_prefix_no);
 static int _kgflags_parse_int(const char *str, bool *out_ok);
 static double _kgflags_parse_double(const char *str, bool *out_ok);
 static void _kgflags_add_error(_kgflags_error_kind_t kind, const char *flag, const char *arg);
 static void _kgflags_assign_default_values(void);
 static bool _kgflags_add_non_flag_arg(const char* arg);
-static _kgflags_flag_t* _kgflags_get_flag(const char* name);
 static const char* _kgflags_consume_arg(void);
 static const char* _kgflags_peek_arg(void);
-static void _kgflags_parse_flag(_kgflags_flag_t *flag);
+static void _kgflags_parse_flag(_kgflags_flag_t *flag, bool prefix_no);
 
 static struct {
     int flags_count;
@@ -245,6 +245,11 @@ void kgflags_string(const char *name, const char *default_value, const char *des
 
 void kgflags_bool(const char *name, const char *description, bool *out_res) {
     *out_res = false;
+
+    if (strstr(name, "no-") == name) {
+        _kgflags_add_error(KGFLAGS_ERROR_KIND_PREFIX_NO, name, NULL);
+        return;
+    }
 
     _kgflags_flag_t flag;
     flag.kind = KGFLAGS_FLAG_KIND_BOOL;
@@ -348,9 +353,10 @@ bool kgflags_parse(int argc, char **argv) {
     while ((arg = _kgflags_consume_arg()) != NULL) {
         _kgflags_flag_t *flag = NULL;
         bool is_flag = _kgflags_is_flag(arg);
+        bool prefix_no = false;
         if (is_flag) {
             const char *flag_name = _kgflags_get_flag_name(arg);
-            flag = _kgflags_get_flag(flag_name);
+            flag = _kgflags_get_flag(flag_name, &prefix_no);
             if (flag == NULL) {
                 _kgflags_add_error(KGFLAGS_ERROR_KIND_UNKNOWN_FLAG, flag_name, NULL);
                 continue;
@@ -364,7 +370,7 @@ bool kgflags_parse(int argc, char **argv) {
             _kgflags_add_error(KGFLAGS_ERROR_KIND_MULTIPLE_ASSIGNMENT, flag->name, NULL);
         }
 
-        _kgflags_parse_flag(flag);
+        _kgflags_parse_flag(flag, prefix_no);
     }
 
     _kgflags_assign_default_values();
@@ -421,6 +427,10 @@ void kgflags_print_errors(void) {
             }
             case KGFLAGS_ERROR_KIND_DUPLICATE_FLAG: {
                 fprintf(stderr, "Redeclaration of flag: %s%s\n", _kgflags_g.flag_prefix, err->flag_name);
+                break;
+            }
+            case KGFLAGS_ERROR_KIND_PREFIX_NO: {
+                fprintf(stderr, "Used \"no-\" prefix when declaring boolean flag: %s%s\n", _kgflags_g.flag_prefix, err->flag_name);
                 break;
             }
             default:
@@ -565,7 +575,7 @@ static const char* _kgflags_get_flag_name(const char* arg) {
 }
 
 static void _kgflags_add_flag(_kgflags_flag_t flag) {
-    if (_kgflags_get_flag(flag.name) != NULL) {
+    if (_kgflags_get_flag(flag.name, NULL) != NULL) {
         _kgflags_add_error(KGFLAGS_ERROR_KIND_DUPLICATE_FLAG, flag.name, NULL);
         return;
     }
@@ -577,11 +587,22 @@ static void _kgflags_add_flag(_kgflags_flag_t flag) {
     _kgflags_g.flags_count++;
 }
 
-static _kgflags_flag_t* _kgflags_get_flag(const char* name) {
+static _kgflags_flag_t* _kgflags_get_flag(const char* name, bool *out_prefix_no) {
+    if (out_prefix_no) {
+        *out_prefix_no = false;
+    }
     for (int i = 0; i < _kgflags_g.flags_count; i++) {
         _kgflags_flag_t *flag = &_kgflags_g.flags[i];
         if (strcmp(name, flag->name) == 0) {
             return flag;
+        }
+        if (flag->kind == KGFLAGS_FLAG_KIND_BOOL && strstr(name, "no-") == name) {
+            if (strcmp(name + 3, flag->name) == 0) {
+                if (out_prefix_no) {
+                    *out_prefix_no = true;
+                }
+                return flag;
+            }
         }
     }
     return NULL;
@@ -685,7 +706,7 @@ static const char* _kgflags_peek_arg() {
     return _kgflags_g.argv[_kgflags_g.arg_cursor];
 }
 
-static void _kgflags_parse_flag(_kgflags_flag_t *flag) {
+static void _kgflags_parse_flag(_kgflags_flag_t *flag, bool prefix_no) {
     switch (flag->kind) {
         case KGFLAGS_FLAG_KIND_STRING: {
             const char *val = _kgflags_consume_arg();
@@ -699,7 +720,7 @@ static void _kgflags_parse_flag(_kgflags_flag_t *flag) {
             break;
         }
         case KGFLAGS_FLAG_KIND_BOOL: {
-            *flag->result.bool_value = true;
+            *flag->result.bool_value = !prefix_no;
             flag->assigned = true;
             break;
         }
