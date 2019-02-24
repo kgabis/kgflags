@@ -16,7 +16,7 @@ kgflags is an easy to use command-line flag parsing library.
 #define KGFLAGS_IMPLEMENTATION
 #include "kgflags.h"
 
-int main(int argc, const char *argv[]) {
+int main(int argc, char **argv) {
     const char *to_print = NULL;  // guaranteed to be assigned only if kgflags_parse succeeds
     kgflags_string("to-print", NULL, "String to print.", true, &to_print);
 

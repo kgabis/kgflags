@@ -1,5 +1,5 @@
 /*
- kgflags v0.1.0
+ kgflags v0.2.0
  http://github.com/kgabis/kgflags/
  Copyright (c) 2019 Krzysztof Gabis
  Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -29,7 +29,7 @@
 #define KGFLAGS_IMPLEMENTATION
 #include "kgflags.h"
 
-int main(int argc, const char *argv[]) {
+int main(int argc, char **argv) {
     const char *to_print = NULL;  // guaranteed to be assigned only if kgflags_parse succeeds
     kgflags_string("to-print", NULL, "String to print.", true, &to_print);
     if (!kgflags_parse(argc, argv)) {
@@ -52,17 +52,17 @@ extern "C" {
 #include <stdbool.h>
 
 typedef struct kgflags_string_array {
-    const char **_items; // private
+    char **_items; // private
     int _count; // private
 } kgflags_string_array_t;
 
 typedef struct kgflags_int_array {
-    const char **_items; // private
+    char **_items; // private
     int _count; // private
 } kgflags_int_array_t;
 
 typedef struct kgflags_double_array {
-    const char **_items; // private
+    char **_items; // private
     int _count; // private
 } kgflags_double_array_t;
 
@@ -94,7 +94,7 @@ void kgflags_double_array(const char *name, const char *description, bool requir
 void kgflags_set_prefix(const char *prefix);
 
 // Parses arguments and assign values to declared flags.
-bool kgflags_parse(int argc, const char *argv[]);
+bool kgflags_parse(int argc, char **argv);
 
 // Prints errors that might've occured when declaring flags or during flag parsing.
 void kgflags_print_errors(void);
@@ -224,7 +224,7 @@ static struct {
 
     int arg_cursor;
     int argc;
-    const char **argv;
+    char **argv;
 
     const char *custom_description;
 } _kgflags_g;
@@ -331,7 +331,7 @@ void kgflags_set_prefix(const char *prefix) {
     _kgflags_g.flag_prefix = prefix;
 }
 
-bool kgflags_parse(int argc, const char *argv[]) {
+bool kgflags_parse(int argc, char **argv) {
     _kgflags_g.argc = argc;
     _kgflags_g.argv = argv;
     _kgflags_g.arg_cursor = 1;

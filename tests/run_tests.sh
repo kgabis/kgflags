@@ -38,7 +38,7 @@ CC="gcc"
 CFLAGS="-O0 -g -Wall -Wextra -std=c99 -pedantic-errors"
 
 CPPC="g++"
-CPPFLAGS="-O0 -g -Wall -Wextra -x c++"
+CPPFLAGS="-O0 -g -Wall -Wextra -x c++ -Wno-c++11-compat-deprecated-writable-strings"
 
 compile_and_run ${CC} "${CFLAGS}"
 compile_and_run ${CPPC} "${CPPFLAGS}"

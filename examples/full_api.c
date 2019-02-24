@@ -1,7 +1,7 @@
 #define KGFLAGS_IMPLEMENTATION
 #include "../kgflags.h"
 
-int main(int argc, const char *argv[]) {
+int main(int argc, char **argv) {
     const char *string_val = NULL;
     kgflags_string("string", "lorem", "String flag.", true, &string_val);
 
