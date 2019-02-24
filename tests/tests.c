@@ -118,25 +118,25 @@ static void test_suite_expected() {
     TEST("Double argument", DBLEQ(doubleval, 123.3));
     TEST("Optional assigned", STREQ(optionalval_assigned, "lorem ipsum"));
 
-    TEST("String array count", kgflags_get_string_array_count(&string_arr) == 3);
-    if (kgflags_get_string_array_count(&string_arr) == 3) {
-        TEST("Array argument [0]", kgflags_get_string_array_item(&string_arr, 0) == "ala");
-        TEST("Array argument [1]", kgflags_get_string_array_item(&string_arr, 1) == "ma");
-        TEST("Array argument [2]", kgflags_get_string_array_item(&string_arr, 2) == "kota");
+    TEST("String array count", kgflags_string_array_get_count(&string_arr) == 3);
+    if (kgflags_string_array_get_count(&string_arr) == 3) {
+        TEST("Array argument [0]", kgflags_string_array_get_item(&string_arr, 0) == "ala");
+        TEST("Array argument [1]", kgflags_string_array_get_item(&string_arr, 1) == "ma");
+        TEST("Array argument [2]", kgflags_string_array_get_item(&string_arr, 2) == "kota");
     }
 
-    TEST("Int array count", kgflags_get_int_array_count(&int_arr) == 3);
-    if (kgflags_get_int_array_count(&int_arr) == 3) {
-        TEST("Array argument [0]", kgflags_get_int_array_item(&int_arr, 0) == 1);
-        TEST("Array argument [1]", kgflags_get_int_array_item(&int_arr, 1) == 2);
-        TEST("Array argument [2]", kgflags_get_int_array_item(&int_arr, 2) == 3);
+    TEST("Int array count", kgflags_int_array_get_count(&int_arr) == 3);
+    if (kgflags_int_array_get_count(&int_arr) == 3) {
+        TEST("Array argument [0]", kgflags_int_array_get_item(&int_arr, 0) == 1);
+        TEST("Array argument [1]", kgflags_int_array_get_item(&int_arr, 1) == 2);
+        TEST("Array argument [2]", kgflags_int_array_get_item(&int_arr, 2) == 3);
     }
 
-    TEST("Double array count", kgflags_get_double_array_count(&double_arr) == 3);
-    if (kgflags_get_double_array_count(&double_arr) == 3) {
-        TEST("Array argument [0]", DBLEQ(kgflags_get_double_array_item(&double_arr, 0), 1.23));
-        TEST("Array argument [1]", DBLEQ(kgflags_get_double_array_item(&double_arr, 1), 2.34));
-        TEST("Array argument [2]", DBLEQ(kgflags_get_double_array_item(&double_arr, 2), 3.45));
+    TEST("Double array count", kgflags_double_array_get_count(&double_arr) == 3);
+    if (kgflags_double_array_get_count(&double_arr) == 3) {
+        TEST("Array argument [0]", DBLEQ(kgflags_double_array_get_item(&double_arr, 0), 1.23));
+        TEST("Array argument [1]", DBLEQ(kgflags_double_array_get_item(&double_arr, 1), 2.34));
+        TEST("Array argument [2]", DBLEQ(kgflags_double_array_get_item(&double_arr, 2), 3.45));
     }
 
     int non_flag_count = kgflags_get_non_flag_args_count();
@@ -259,7 +259,7 @@ static void test_suite_errors() {
         TEST("Invalid int in array", kgflags_parse(ARRAY_SIZE(argv), argv) == false);
         TEST("Errors count == 1", _kgflags_g.errors_count == 1);
         TEST("KGFLAGS_ERROR_KIND_INVALID_INT set", test_kgflags_contains_error(KGFLAGS_ERROR_KIND_INVALID_INT));
-        TEST("Array count == 0", kgflags_get_int_array_count(&arr) == 0);
+        TEST("Array count == 0", kgflags_int_array_get_count(&arr) == 0);
     }
 
     {
@@ -280,7 +280,7 @@ static void test_suite_errors() {
         TEST("Invalid double in array", kgflags_parse(ARRAY_SIZE(argv), argv) == false);
         TEST("Errors count == 1", _kgflags_g.errors_count == 1);
         TEST("KGFLAGS_ERROR_KIND_INVALID_DOUBLE set", test_kgflags_contains_error(KGFLAGS_ERROR_KIND_INVALID_DOUBLE));
-        TEST("Array count == 0", kgflags_get_double_array_count(&arr) == 0);
+        TEST("Array count == 0", kgflags_double_array_get_count(&arr) == 0);
     }
 
     {

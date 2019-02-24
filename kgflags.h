@@ -1,5 +1,5 @@
 /*
- kgflags v0.3.0
+ kgflags v0.4.0
  http://github.com/kgabis/kgflags/
  Copyright (c) 2019 Krzysztof Gabis
  Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -109,16 +109,16 @@ void kgflags_print_usage(void);
 // e.g. kgflags_set_custom_description("Usage: ./app [--FLAGS] [file ...]");
 void kgflags_set_custom_description(const char *description);
 
-int kgflags_get_string_array_count(const kgflags_string_array_t *arr);
-const char* kgflags_get_string_array_item(const kgflags_string_array_t *arr, int at);
+int kgflags_string_array_get_count(const kgflags_string_array_t *arr);
+const char* kgflags_string_array_get_item(const kgflags_string_array_t *arr, int at);
 
 // Result is parsed from string every time you get an item.
-int kgflags_get_int_array_count(const kgflags_int_array_t *arr);
-int kgflags_get_int_array_item(const kgflags_int_array_t *arr, int at);
+int kgflags_int_array_get_count(const kgflags_int_array_t *arr);
+int kgflags_int_array_get_item(const kgflags_int_array_t *arr, int at);
 
 // Result is parsed from string every time you get an item.
-int kgflags_get_double_array_count(const kgflags_double_array_t *arr);
-double kgflags_get_double_array_item(const kgflags_double_array_t *arr, int at);
+int kgflags_double_array_get_count(const kgflags_double_array_t *arr);
+double kgflags_double_array_get_item(const kgflags_double_array_t *arr, int at);
 
 // Returns arguments that don't belong to any flags.
 // e.g. if we defined a flag named "file" and call "./app arg0 --file test arg1"
@@ -489,22 +489,22 @@ void kgflags_set_custom_description(const char *description) {
     _kgflags_g.custom_description = description;
 }
 
-int kgflags_get_string_array_count(const kgflags_string_array_t *arr) {
+int kgflags_string_array_get_count(const kgflags_string_array_t *arr) {
     return arr->_count;
 }
 
-const char* kgflags_get_string_array_item(const kgflags_string_array_t *arr, int at) {
+const char* kgflags_string_array_get_item(const kgflags_string_array_t *arr, int at) {
     if (at < 0 || at >= arr->_count) {
         return NULL;
     }
     return arr->_items[at];
 }
 
-int kgflags_get_int_array_count(const kgflags_int_array_t *arr) {
+int kgflags_int_array_get_count(const kgflags_int_array_t *arr) {
     return arr->_count;
 }
 
-int kgflags_get_int_array_item(const kgflags_int_array_t *arr, int at) {
+int kgflags_int_array_get_item(const kgflags_int_array_t *arr, int at) {
     if (at < 0 || at >= arr->_count) {
         return 0;
     }
@@ -517,11 +517,11 @@ int kgflags_get_int_array_item(const kgflags_int_array_t *arr, int at) {
     return res;
 }
 
-int kgflags_get_double_array_count(const kgflags_double_array_t *arr) {
+int kgflags_double_array_get_count(const kgflags_double_array_t *arr) {
     return arr->_count;
 }
 
-double kgflags_get_double_array_item(const kgflags_double_array_t *arr, int at) {
+double kgflags_double_array_get_item(const kgflags_double_array_t *arr, int at) {
     if (at < 0 || at >= arr->_count) {
         return 0.0;
     }
