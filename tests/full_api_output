@@ -1,5 +1,6 @@
 Unrecognized flag: -extra-flag
 Unassigned required flag: -string
+Unassigned required flag: -bool
 Unassigned required flag: -int
 Unassigned required flag: -double
 Unassigned required flag: -string-array
@@ -7,17 +8,24 @@ Unassigned required flag: -int-array
 Unassigned required flag: -double-array
 Usage of fullapi [-FLAGS]:
 Flags:
-	-string (string)
+	-string	(string)
 		String flag.
-	-bool (boolean)
+
+	-bool, -no-bool	(boolean)
 		Boolean flag.
-	-int (integer)
+
+	-int	(integer)
 		Integer flag.
-	-double (float)
+
+	-double	(float)
 		Double flag.
-	-string-array (array of strings)
+
+	-string-array	(array of strings)
 		String array flag.
-	-int-array (array of integers)
+
+	-int-array	(array of integers)
 		Int array flag.
-	-double-array (array of floats)
+
+	-double-array	(array of floats)
 		Double array flag.
+

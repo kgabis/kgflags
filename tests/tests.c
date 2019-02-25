@@ -81,10 +81,10 @@ static void test_suite_expected() {
     kgflags_string("string", "lorem", "String flag.", true, &stringval);
 
     bool boolval = false;
-    kgflags_bool("bool", "Boolean flag.", &boolval);
+    kgflags_bool("bool", false, "Boolean flag.", true, &boolval);
 
     bool bool2val = true;
-    kgflags_bool("bool-2", "Boolean flag.", &bool2val);
+    kgflags_bool("bool-2", true, "Boolean flag.", true, &bool2val);
 
     int intval = 0;
     kgflags_int("int", 0, "Integer flag.", true, &intval);
@@ -327,7 +327,7 @@ static void test_suite_errors() {
         test_kgflags_reset();
         char *argv[] = { "", };
         bool boolval = false;
-        kgflags_bool("no-bool", NULL, &boolval);
+        kgflags_bool("no-bool", false, NULL, true, &boolval);
         TEST("Bool flag with no- prefix", kgflags_parse(ARRAY_SIZE(argv), argv) == false);
         TEST("Errors count == 1", _kgflags_g.errors_count == 1);
         TEST("KGFLAGS_ERROR_KIND_PREFIX_NO set", test_kgflags_contains_error(KGFLAGS_ERROR_KIND_PREFIX_NO));

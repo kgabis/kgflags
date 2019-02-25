@@ -6,7 +6,7 @@ int main(int argc, char **argv) {
     kgflags_string("string", "lorem", "String flag.", true, &string_val);
 
     bool bool_val = false;
-    kgflags_bool("bool", "Boolean flag.", &bool_val);
+    kgflags_bool("bool", false, "Boolean flag.", true, &bool_val);
 
     int int_val = 0;
     kgflags_int("int", 0, "Integer flag.", true, &int_val);

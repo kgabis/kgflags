@@ -1,5 +1,5 @@
 /*
- kgflags v0.5.0
+ kgflags v0.6.0
  http://github.com/kgabis/kgflags/
  Copyright (c) 2019 Krzysztof Gabis
  Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -80,7 +80,7 @@ typedef struct kgflags_double_array {
 
 // Functions used to declare flags. If kgflags_parse succeeds values are assigned to out_res/out_arr. Description is optional.
 void kgflags_string(const char *name, const char *default_value, const char *description, bool required, const char** out_res);
-void kgflags_bool(const char *name, const char *description, bool *out_res);
+void kgflags_bool(const char *name, bool default_value, const char *description, bool required, bool *out_res);
 void kgflags_int(const char *name, int default_value, const char *description, bool required, int *out_res);
 void kgflags_double(const char *name, double default_value, const char *description, bool required, double *out_res);
 
@@ -243,7 +243,7 @@ void kgflags_string(const char *name, const char *default_value, const char *des
     _kgflags_add_flag(flag);
 }
 
-void kgflags_bool(const char *name, const char *description, bool *out_res) {
+void kgflags_bool(const char *name, bool default_value, const char *description, bool required, bool *out_res) {
     *out_res = false;
 
     if (strstr(name, "no-") == name) {
@@ -254,9 +254,9 @@ void kgflags_bool(const char *name, const char *description, bool *out_res) {
     _kgflags_flag_t flag;
     flag.kind = KGFLAGS_FLAG_KIND_BOOL;
     flag.name = name;
-    flag.default_value.bool_value = false;
+    flag.default_value.bool_value = default_value;
     flag.description = description;
-    flag.required = false;
+    flag.required = required;
     flag.result.bool_value = out_res;
     flag.assigned = false;
     _kgflags_add_flag(flag);
@@ -451,39 +451,43 @@ void kgflags_print_usage() {
         _kgflags_flag_t *flag = &_kgflags_g.flags[i];
         switch (flag->kind) {
             case KGFLAGS_FLAG_KIND_STRING:
-                fprintf(stderr, "\t%s%s (string)%s\n", _kgflags_g.flag_prefix, flag->name, flag->required ? "" : " (optional)");
+                fprintf(stderr, "\t%s%s\t(string%s\n", _kgflags_g.flag_prefix, flag->name, flag->required ? ")" : ", optional)");
                 if (!flag->required) {
                     fprintf(stderr, "\t\tDefault: %s\n", flag->default_value.string_value);
                 }
                 break;
             case KGFLAGS_FLAG_KIND_BOOL: {
-                fprintf(stderr, "\t%s%s (boolean)\n", _kgflags_g.flag_prefix, flag->name);
+                fprintf(stderr, "\t%s%s, %sno-%s\t(boolean%s\n", _kgflags_g.flag_prefix, flag->name, _kgflags_g.flag_prefix, flag->name,
+                    flag->required ? ")" : ", optional)");
+                if (!flag->required) {
+                    fprintf(stderr, "\t\tDefault: %s\n", flag->default_value.bool_value ? "True" : "False");
+                }
                 break;
             }
             case KGFLAGS_FLAG_KIND_INT: {
-                fprintf(stderr, "\t%s%s (integer)%s\n", _kgflags_g.flag_prefix, flag->name, flag->required ? "" : " (optional)");
+                fprintf(stderr, "\t%s%s\t(integer%s\n", _kgflags_g.flag_prefix, flag->name, flag->required ? ")" : ", optional)");
                 if (!flag->required) {
                     fprintf(stderr, "\t\tDefault: %d\n", flag->default_value.int_value);
                 }
                 break;
             }
             case KGFLAGS_FLAG_KIND_DOUBLE: {
-                fprintf(stderr, "\t%s%s (float)%s\n", _kgflags_g.flag_prefix, flag->name, flag->required ? "" : " (optional)");
+                fprintf(stderr, "\t%s%s\t(float%s\n", _kgflags_g.flag_prefix, flag->name, flag->required ? ")" : ", optional)");
                 if (!flag->required) {
                     fprintf(stderr, "\t\tDefault: %1.4g\n", flag->default_value.double_value);
                 }
                 break;
             }
             case KGFLAGS_FLAG_KIND_STRING_ARRAY: {
-                fprintf(stderr, "\t%s%s (array of strings)%s\n", _kgflags_g.flag_prefix, flag->name, flag->required ? "" : " (optional)");
+                fprintf(stderr, "\t%s%s\t(array of strings%s\n", _kgflags_g.flag_prefix, flag->name, flag->required ? ")" : ", optional)");
                 break;
             }
             case KGFLAGS_FLAG_KIND_INT_ARRAY: {
-                fprintf(stderr, "\t%s%s (array of integers)%s\n", _kgflags_g.flag_prefix, flag->name, flag->required ? "" : " (optional)");
+                fprintf(stderr, "\t%s%s\t(array of integers%s\n", _kgflags_g.flag_prefix, flag->name, flag->required ? ")" : ", optional)");
                 break;
             }
             case KGFLAGS_FLAG_KIND_DOUBLE_ARRAY: {
-                fprintf(stderr, "\t%s%s (array of floats)%s\n", _kgflags_g.flag_prefix, flag->name, flag->required ? "" : " (optional)");
+                fprintf(stderr, "\t%s%s\t(array of floats%s\n", _kgflags_g.flag_prefix, flag->name, flag->required ? ")" : ", optional)");
                 break;
             }
             default:
@@ -492,6 +496,7 @@ void kgflags_print_usage() {
         if (flag->description) {
             fprintf(stderr, "\t\t%s\n", flag->description);
         }
+        fprintf(stderr, "\n");
     }
 }
 
