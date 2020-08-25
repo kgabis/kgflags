@@ -1,7 +1,7 @@
 /*
- kgflags v0.6.0
+ kgflags v0.6.1
  http://github.com/kgabis/kgflags/
- Copyright (c) 2019 Krzysztof Gabis
+ Copyright (c) 2020 Krzysztof Gabis
  Permission is hereby granted, free of charge, to any person obtaining a copy
  of this software and associated documentation files (the "Software"), to deal
  in the Software without restriction, including without limitation the rights
@@ -233,6 +233,7 @@ void kgflags_string(const char *name, const char *default_value, const char *des
     *out_res = NULL;
 
     _kgflags_flag_t flag;
+    memset(&flag, 0, sizeof(_kgflags_flag_t));
     flag.kind = KGFLAGS_FLAG_KIND_STRING;
     flag.name = name;
     flag.default_value.string_value = default_value;
@@ -252,6 +253,7 @@ void kgflags_bool(const char *name, bool default_value, const char *description,
     }
 
     _kgflags_flag_t flag;
+    memset(&flag, 0, sizeof(_kgflags_flag_t));
     flag.kind = KGFLAGS_FLAG_KIND_BOOL;
     flag.name = name;
     flag.default_value.bool_value = default_value;
@@ -266,6 +268,7 @@ void kgflags_int(const char *name, int default_value, const char *description, b
     *out_res = 0;
 
     _kgflags_flag_t flag;
+    memset(&flag, 0, sizeof(_kgflags_flag_t));
     flag.kind = KGFLAGS_FLAG_KIND_INT;
     flag.name = name;
     flag.default_value.int_value = default_value;
@@ -280,6 +283,7 @@ void kgflags_double(const char *name, double default_value, const char *descript
     *out_res = 0.0;
 
     _kgflags_flag_t flag;
+    memset(&flag, 0, sizeof(_kgflags_flag_t));
     flag.kind = KGFLAGS_FLAG_KIND_DOUBLE;
     flag.name = name;
     flag.default_value.double_value = default_value;
@@ -295,6 +299,7 @@ void kgflags_string_array(const char *name, const char *description, bool requir
     out_arr->_count = 0;
 
     _kgflags_flag_t flag;
+    memset(&flag, 0, sizeof(_kgflags_flag_t));
     flag.kind = KGFLAGS_FLAG_KIND_STRING_ARRAY;
     flag.name = name;
     flag.description = description;
@@ -309,6 +314,7 @@ void kgflags_int_array(const char *name, const char *description, bool required,
     out_arr->_count = 0;
 
     _kgflags_flag_t flag;
+    memset(&flag, 0, sizeof(_kgflags_flag_t));
     flag.kind = KGFLAGS_FLAG_KIND_INT_ARRAY;
     flag.name = name;
     flag.description = description;
@@ -323,6 +329,7 @@ void kgflags_double_array(const char *name, const char *description, bool requir
     out_arr->_count = 0;
 
     _kgflags_flag_t flag;
+    memset(&flag, 0, sizeof(_kgflags_flag_t));
     flag.kind = KGFLAGS_FLAG_KIND_DOUBLE_ARRAY;
     flag.name = name;
     flag.description = description;
